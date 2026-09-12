@@ -5,3 +5,5 @@ passlib[bcrypt]
 python-multipart
 python-dotenv
 python-jose[cryptography]
+alembic
+sqlalchemy-utils
