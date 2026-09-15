@@ -78,3 +78,7 @@ class Product(Base):
         self.price = price
         self.flavor = flavor
         self.size = size
+
+# alembic init alembic
+# alembic revision --autogenerate -m "comentário"
+# alembic upgrade head

@@ -1,4 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from models.models import User
+from dependencies.dependencies import get_session
 
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -6,3 +8,16 @@ auth_router = APIRouter(prefix="/auth", tags=["auth"])
 async def get_auth():
     """Endpoint for authentication. Returns a message indicating the authentication endpoint."""
     return {"message": "Authentication endpoint"}
+
+@auth_router.post("/create_account")
+async def post_create_account(name:str, email: str, password: str, session = Depends(get_session)):
+
+    user = session.query(User).filter(User.email==email).first()
+    if user:
+        return {'mensage': "user alredy existe"}
+    else:
+        new_user = User(name= name, email=email, password=password)
+        session.add(new_user)
+        session.commit()
+        return {'mensage': "user created"}
+
