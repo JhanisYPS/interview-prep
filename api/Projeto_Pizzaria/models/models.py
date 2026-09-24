@@ -40,7 +40,7 @@ class Order(Base):
     total = Column("total", Float, nullable=False)
     status = Column("status", String, ChoiceType(choices=STATUS_ORDERS), default="PENDENTE") #pendente, cancelado, finalizado
 
-    def __init__(self, user_id: int, total: float, status: str = "PENDENTE"):
+    def __init__(self, user_id: int, total: float = 0, status: str = "PENDENTE"):
         self.user_id = user_id
         self.total = total
         self.status = status
