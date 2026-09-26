@@ -7,6 +7,8 @@ from passlib.context import CryptContext
 load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
+TTL_TOKEN = int(os.getenv("TTL_TOKEN"))
 
 app = FastAPI()
 
