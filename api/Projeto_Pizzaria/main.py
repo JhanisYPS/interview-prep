@@ -3,6 +3,8 @@ import os
 from fastapi import FastAPI
 from dotenv import load_dotenv
 from passlib.context import CryptContext
+from fastapi.security import OAuth2PasswordBearer
+
 
 load_dotenv()
 
@@ -13,6 +15,7 @@ TTL_TOKEN = int(os.getenv("TTL_TOKEN"))
 app = FastAPI()
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_schema = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 from routes.auth_routes import auth_router
 from routes.order_routes import order_router

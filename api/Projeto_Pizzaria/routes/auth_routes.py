@@ -1,20 +1,21 @@
 from fastapi import APIRouter, Depends, HTTPException
 from models.models import User
-from dependencies.dependencies import get_session
+from dependencies.dependencies import get_session, verify_token
 
 from main import bcrypt_context, ALGORITHM,TTL_TOKEN, SECRET_KEY
 from schemas.schemas import UserSchema, LoginSchema
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 from datetime import datetime, timedelta, timezone
+from fastapi.security import OAuth2PasswordRequestForm
 
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
 
 #função auxiliar
-def create_token(user_id:int):
-    date_exp = datetime.now(timezone.utc) + timedelta(minutes=TTL_TOKEN)
+def create_token(user_id:int, TTL: datetime = timedelta(minutes=TTL_TOKEN)):
+    date_exp = datetime.now(timezone.utc) + TTL
     dict_info = {
-        "sub":user_id,
+        "sub":str(user_id),
         "exp": date_exp
     }
     jwt_encode = jwt.encode(dict_info,SECRET_KEY,algorithm = ALGORITHM)
@@ -48,14 +49,28 @@ async def post_create_account(user_schema: UserSchema, session: Session = Depend
         return {'mensage': "user created"}
 
 @auth_router.post("/login")
-async def login(login_schema: LoginSchema, session: Session = Depends(get_session)):
-    user = auth_user(login_schema.email, login_schema.password, session)
+async def login(login_schema: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
+    user = auth_user(login_schema.username, login_schema.password, session)
     if not user:
         raise HTTPException(status_code=400, detail="user not found")
     else:
         access_token = create_token(user.id)
+        refresh_token = create_token(user.id, timedelta(days=7))
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type": "Bearer"
+        }
+
+@auth_router.get("/refresh_token_access")
+async def renew_access_token(user_id: int = Depends(verify_token)):
+    if not user_id:
+        raise HTTPException(status_code=400, detail="user not found")
+    else:
+        access_token = create_token(user_id)
         return {
             "access_token": access_token,
             "token_type": "Bearer"
         }
+
 
