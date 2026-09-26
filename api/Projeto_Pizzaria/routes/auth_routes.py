@@ -13,6 +13,15 @@ def create_token(user_id:int):
     token = f"ahdushduah{user_id}sudha"
     return token
 
+def auth_user(email:str, password: str, session: Session):
+    user = session.query(User).filter(User.email==email).first()
+    if not user:
+        return False
+    elif not bcrypt_context.verify(password, user.password):
+        return False
+    else:
+        return user
+
 @auth_router.get("/")
 async def get_auth():
     """Endpoint for authentication. Returns a message indicating the authentication endpoint."""
@@ -33,7 +42,7 @@ async def post_create_account(user_schema: UserSchema, session: Session = Depend
 
 @auth_router.post("/login")
 async def login(login_schema: LoginSchema, session: Session = Depends(get_session)):
-    user = session.query(User).filter(User.email==login_schema.email).first()
+    user = auth_user(login_schema.email, login_schema.password, session)
     if not user:
         raise HTTPException(status_code=400, detail="user not found")
     else:
