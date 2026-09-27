@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from dependencies.dependencies import get_session, verify_token
-from schemas.schemas import OrderSchema
-from models.models import Order, User
+from schemas.schemas import OrderItemSchema
+from models.models import Order, User, OrderItem
 
 order_router = APIRouter(prefix="/order", tags=["order"], dependencies = [Depends(verify_token)])
 
@@ -43,3 +43,20 @@ async def get_orders(session: Session = Depends(get_session), user: User = Depen
         return {
             "orders": orders
         }
+
+@order_router.post("/add_itens/{order_id}")
+async def add_itens(order_id: int, item_schema: OrderItemSchema, session: Session = Depends(get_session), user: User = Depends(verify_token) ):
+    order = session.query(Order).filter(Order.id==order_id).first()
+
+    if not order:
+        raise HTTPException(status_code=404, detail="order not found")
+    elif order.user_id != user.id and not user.admin:
+        raise HTTPException(status_code=401, detail="not Authorized")
+
+    item = OrderItem(order_id = order_id, product_id=item_schema.product_id, quantity=item_schema.quantity,price=item_schema.price)
+    session.add(item)
+    order.update_total()
+    session.commit()
+    return {
+        "message": f"item created id {item.id}"
+    }

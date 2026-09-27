@@ -45,6 +45,10 @@ class Order(Base):
         self.total = total
         self.status = status
 
+    def update_total(self):
+        self.total = 20
+        return
+
 class OrderItem(Base):
     __tablename__ = "order_items"
 
@@ -60,6 +64,9 @@ class OrderItem(Base):
         self.product_id = product_id
         self.quantity = quantity
         self.price = price
+
+
+
 
 class Product(Base):
     __tablename__ = "products"

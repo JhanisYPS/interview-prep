@@ -3,7 +3,7 @@ from models.models import User
 from dependencies.dependencies import get_session, verify_token
 
 from main import bcrypt_context, ALGORITHM,TTL_TOKEN, SECRET_KEY
-from schemas.schemas import UserSchema, LoginSchema
+from schemas.schemas import UserSchema
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 from datetime import datetime, timedelta, timezone
