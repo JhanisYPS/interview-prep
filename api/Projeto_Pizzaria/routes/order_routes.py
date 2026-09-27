@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from dependencies.dependencies import get_session, verify_token
-from schemas.schemas import OrderItemSchema
+from schemas.schemas import OrderItemSchema, ResponseOrderSchema
 from models.models import Order, User, OrderItem
+from typing import List
 
 order_router = APIRouter(prefix="/order", tags=["order"], dependencies = [Depends(verify_token)])
 
@@ -110,7 +111,7 @@ async def get_orders_by_id(order_id: int, session: Session = Depends(get_session
             "orders": order
         }
 
-@order_router.get("/orders/{user_id}")
+@order_router.get("/orders/{user_id}", response_model=List[ResponseOrderSchema])
 async def get_orders_by_user(user_id: int, session: Session = Depends(get_session), user: User = Depends(verify_token)):
     order = session.query(Order).filter(Order.user_id==user_id).all()
 
@@ -119,6 +120,4 @@ async def get_orders_by_user(user_id: int, session: Session = Depends(get_sessio
         
     elif not order:
         raise HTTPException(status_code=404, detail="orders not found")
-    return {
-            "orders": order
-        }
+    return order
