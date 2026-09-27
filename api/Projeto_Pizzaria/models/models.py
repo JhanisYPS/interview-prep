@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Float, Boolean
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy_utils.types import ChoiceType
 
 # conexão
@@ -39,6 +39,7 @@ class Order(Base):
     user_id = Column("user_id", Integer, ForeignKey("users.id"), nullable=False)
     total = Column("total", Float, nullable=False)
     status = Column("status", String, ChoiceType(choices=STATUS_ORDERS), default="PENDENTE") #pendente, cancelado, finalizado
+    itens = relationship("OrderItem", cascade="all , delete")
 
     def __init__(self, user_id: int, total: float = 0, status: str = "PENDENTE"):
         self.user_id = user_id
@@ -46,8 +47,8 @@ class Order(Base):
         self.status = status
 
     def update_total(self):
-        self.total = 20
-        return
+        self.total = sum(item.price * item.quantity for item in self.itens)
+
 
 class OrderItem(Base):
     __tablename__ = "order_items"
