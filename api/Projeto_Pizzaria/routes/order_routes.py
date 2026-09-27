@@ -30,7 +30,6 @@ async def cancel_order(order_id: int, session: Session = Depends(get_session), u
     order.status = "CANCELADO"
     session.commit()
     return {
-        "message": f"order cancel id {order_id}",
-        "order": order,
-        "user_id": user.id
+        "message": f"order cancel id {order.id}",
+        "order": order
         }
