@@ -63,11 +63,11 @@ async def login(login_schema: OAuth2PasswordRequestForm = Depends(), session: Se
         }
 
 @auth_router.get("/refresh_token_access")
-async def renew_access_token(user_id: int = Depends(verify_token)):
-    if not user_id:
+async def renew_access_token(user: User = Depends(verify_token)):
+    if not user.id:
         raise HTTPException(status_code=400, detail="user not found")
     else:
-        access_token = create_token(user_id)
+        access_token = create_token(user.id)
         return {
             "access_token": access_token,
             "token_type": "Bearer"
