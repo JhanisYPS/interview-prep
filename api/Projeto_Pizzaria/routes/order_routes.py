@@ -7,7 +7,7 @@ from models.models import Order, User, OrderItem
 order_router = APIRouter(prefix="/order", tags=["order"], dependencies = [Depends(verify_token)])
 
 @order_router.get("/")
-async def get_orders():
+async def get_orders_test():
     """Endpoint for retrieving the list of orders. Returns a message indicating the orders endpoint."""
     return {"message": "List of orders"}
 
@@ -30,7 +30,7 @@ async def cancel_order(order_id: int, session: Session = Depends(get_session), u
     order.status = "CANCELADO"
     session.commit()
     return {
-        "message": f"order cancel id {order.id}",
+        "message": f"order canceled id: {order.id}",
         "order": order
         }
 
@@ -58,19 +58,18 @@ async def add_itens(order_id: int, item_schema: OrderItemSchema, session: Sessio
     order.update_total()
     session.commit()
     return {
-        "message": f"item created id {item.id}"
+        "message": f"item created id: {item.id}"
     }
 
 @order_router.post("/delete_itens/{item_id}")
 async def add_itens(item_id: int, session: Session = Depends(get_session), user: User = Depends(verify_token) ):
     item = session.query(OrderItem).filter(OrderItem.id==item_id).first()
     order = session.query(Order).filter(Order.id==item.order_id).first()
-    
+
     if not item:
         raise HTTPException(status_code=404, detail="order not found")
     elif order.user_id != user.id and not user.admin:
         raise HTTPException(status_code=401, detail="not Authorized")
-    
     
     session.delete(item)
     order.update_total()
@@ -81,3 +80,45 @@ async def add_itens(item_id: int, session: Session = Depends(get_session), user:
         "order": order
     }
 
+@order_router.post("/order/close/{order_id}")
+async def close_order(order_id: int, session: Session = Depends(get_session), user: User = Depends(verify_token)):
+    order = session.query(Order).filter(Order.id==order_id).first()
+
+    if not order:
+        raise HTTPException(status_code=400, detail="order not found")
+    elif order.user_id != user.id and not user.admin:
+        raise HTTPException(status_code=401, detail="not Authorized")
+    
+    order.status = "FINALIZADO"
+    session.commit()
+    return {
+        "message": f"order closed id: {order.id}",
+        "order": order
+        }
+
+@order_router.get("/view_order/{order_id}")
+async def get_orders_by_id(order_id: int, session: Session = Depends(get_session), user: User = Depends(verify_token)):
+    order = session.query(Order).filter(Order.id==order_id).first()
+
+    if not order:
+        raise HTTPException(status_code=400, detail="order not found")
+    elif order.user_id != user.id and not user.admin:
+        raise HTTPException(status_code=401, detail="not Authorized")
+    
+    return {
+            "qtd. itens": len(order.itens),
+            "orders": order
+        }
+
+@order_router.get("/orders/{user_id}")
+async def get_orders_by_user(user_id: int, session: Session = Depends(get_session), user: User = Depends(verify_token)):
+    order = session.query(Order).filter(Order.user_id==user_id).all()
+
+    if user_id != user.id and not user.admin:
+        raise HTTPException(status_code=401, detail="not Authorized")
+        
+    elif not order:
+        raise HTTPException(status_code=404, detail="orders not found")
+    return {
+            "orders": order
+        }
