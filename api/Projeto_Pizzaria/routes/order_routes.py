@@ -62,7 +62,7 @@ async def add_itens(order_id: int, item_schema: OrderItemSchema, session: Sessio
     }
 
 @order_router.post("/delete_itens/{item_id}")
-async def add_itens(item_id: int, session: Session = Depends(get_session), user: User = Depends(verify_token) ):
+async def delete_itens(item_id: int, session: Session = Depends(get_session), user: User = Depends(verify_token) ):
     item = session.query(OrderItem).filter(OrderItem.id==item_id).first()
     order = session.query(Order).filter(Order.id==item.order_id).first()
 
