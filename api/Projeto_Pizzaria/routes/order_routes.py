@@ -18,7 +18,7 @@ async def create_order(session: Session = Depends(get_session), user: User = Dep
     session.commit()
     return{"message": "order created id {}".format(new_order.id)}
 
-@order_router.post("order/cancel/{order_id}")
+@order_router.post("/order/cancel/{order_id}")
 async def cancel_order(order_id: int, session: Session = Depends(get_session), user: User = Depends(verify_token)):
     order = session.query(Order).filter(Order.id==order_id).first()
 
@@ -32,4 +32,14 @@ async def cancel_order(order_id: int, session: Session = Depends(get_session), u
     return {
         "message": f"order cancel id {order.id}",
         "order": order
+        }
+
+@order_router.get("/orders")
+async def get_orders(session: Session = Depends(get_session), user: User = Depends(verify_token)):
+    if not user.admin:
+        raise HTTPException(status_code=401, detail="not Authorized")
+    else:
+        orders = session.query(Order).all()
+        return {
+            "orders": orders
         }
