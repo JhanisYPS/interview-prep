@@ -60,3 +60,24 @@ async def add_itens(order_id: int, item_schema: OrderItemSchema, session: Sessio
     return {
         "message": f"item created id {item.id}"
     }
+
+@order_router.post("/delete_itens/{item_id}")
+async def add_itens(item_id: int, session: Session = Depends(get_session), user: User = Depends(verify_token) ):
+    item = session.query(OrderItem).filter(OrderItem.id==item_id).first()
+    order = session.query(Order).filter(Order.id==item.order_id).first()
+    
+    if not item:
+        raise HTTPException(status_code=404, detail="order not found")
+    elif order.user_id != user.id and not user.admin:
+        raise HTTPException(status_code=401, detail="not Authorized")
+    
+    
+    session.delete(item)
+    order.update_total()
+    session.commit()
+    return {
+        "message": f"item deleted id {item.id}",
+        "qtd. itens": len(order.itens),
+        "order": order
+    }
+
