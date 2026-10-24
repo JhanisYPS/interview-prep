@@ -21,7 +21,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "typescript": "tsc --project tsconfig.json --noEmit",
+    "lint": "eslint src --color"
   },
   "eslintConfig": {
     "extends": [
@@ -40,5 +42,12 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^8.57.1",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^17.13.0",
+    "typescript-eslint": "^8.72.0"
   }
 }
